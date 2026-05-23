@@ -1,0 +1,14 @@
+# ---- Claude Code ----
+# provider_refs 可选: ["anthropic"] / ["deepseek-claude"] / ["kimi-claude"]
+# 改为你的实际 provider 引用
+
+[[projects]]
+name = "claude-official"
+provider_refs = ["anthropic"]
+
+[projects.agent]
+type = "claudecode"
+
+[projects.agent.options]
+work_dir = "/home/REPLACE_ME_USER/work/claude-official"
+mode = "default"

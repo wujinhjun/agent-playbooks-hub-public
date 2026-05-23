@@ -1,0 +1,5 @@
+[[providers]]
+name = "kimi-claude"
+api_key = "${KIMI_API_KEY}"
+base_url = "https://api.moonshot.cn/anthropic"
+agent_types = ["claudecode"]

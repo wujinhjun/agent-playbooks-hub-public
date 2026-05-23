@@ -1,0 +1,4 @@
+[[providers]]
+name = "anthropic"
+api_key = "${ANTHROPIC_API_KEY}"
+agent_types = ["claudecode"]

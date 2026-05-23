@@ -1,0 +1,61 @@
+# === Mihomo Config Template ===
+# 复制到 ~/.config/bootstrap-ubuntu/mihomo-config.yaml 并填入真实值
+
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+external-controller: 127.0.0.1:9090
+
+tun:
+  enable: true
+  stack: system
+  auto-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+
+dns:
+  enable: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  nameserver:
+    - 223.5.5.5
+  proxy-server-nameserver:
+    - 223.5.5.5
+
+proxies:
+  - name: "YOUR_PROXY_NAME"
+    type: "vless"
+    server: "REPLACE_WITH_VPS_IP"
+    port: 443
+    uuid: "REPLACE_WITH_UUID"
+    network: "tcp"
+    tls: true
+    udp: true
+    flow: "xtls-rprx-vision"
+    servername: "www.apple.com"
+    reality-opts:
+      public-key: "REPLACE_WITH_PUBLIC_KEY"
+      short-id: "REPLACE_WITH_SHORT_ID"
+    client-fingerprint: "chrome"
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies:
+      - YOUR_PROXY_NAME
+
+rules:
+  # 风控严格的目标
+  - DOMAIN-SUFFIX,anthropic.com,PROXY
+  - DOMAIN,api.anthropic.com,PROXY
+  # 普通国外资源
+  - DOMAIN-SUFFIX,github.com,PROXY
+  - DOMAIN-SUFFIX,githubusercontent.com,PROXY
+  - DOMAIN-SUFFIX,docker.io,PROXY
+  # 中文内容直连
+  - GEOSITE,cn,DIRECT
+  # SSH 直连
+  - DST-PORT,22,DIRECT
+  - MATCH,PROXY

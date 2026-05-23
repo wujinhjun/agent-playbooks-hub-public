@@ -1,0 +1,11 @@
+# ---- OpenAI Codex ----
+
+[[projects]]
+name = "codex"
+
+[projects.agent]
+type = "codex"
+
+[projects.agent.options]
+work_dir = "/home/REPLACE_ME_USER/work/codex"
+mode = "default"

@@ -1,0 +1,11 @@
+# 高危事件落盘审计
+[[hooks]]
+event = "permission.requested"
+type = "command"
+command = "echo \"$CC_HOOK_TIME $CC_HOOK_PROJECT $CC_HOOK_PROMPT\" >> /home/REPLACE_ME_USER/work/_logs/perm.log"
+async = true
+
+[[hooks]]
+event = "session.ended"
+type = "command"
+command = "echo \"$CC_HOOK_TIME $CC_HOOK_PROJECT ended\" >> /home/REPLACE_ME_USER/work/_logs/sessions.log"

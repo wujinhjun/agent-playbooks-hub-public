@@ -1,0 +1,12 @@
+# 飞书 — 长连接模式，不需要公网 IP/域名
+# 每个 project 独立配一个 [[projects.platforms]] 区块
+# app_id / app_secret 建议用 ${ENV_VAR} 占位，真值放 secrets.env
+
+[[projects.platforms]]
+type = "feishu"
+
+[projects.platforms.options]
+app_id = "${FEISHU_APPID}"
+app_secret = "${FEISHU_SECRET}"
+progress_style = "card"
+thread_isolation = true

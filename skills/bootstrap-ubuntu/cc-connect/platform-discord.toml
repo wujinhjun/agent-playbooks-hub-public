@@ -1,0 +1,5 @@
+[[projects.platforms]]
+type = "discord"
+
+[projects.platforms.options]
+bot_token = "${DISCORD_BOT_TOKEN}"

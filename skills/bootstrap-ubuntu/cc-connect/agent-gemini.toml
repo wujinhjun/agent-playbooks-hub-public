@@ -1,0 +1,11 @@
+# ---- Google Gemini CLI ----
+
+[[projects]]
+name = "gemini"
+
+[projects.agent]
+type = "gemini"
+
+[projects.agent.options]
+work_dir = "/home/REPLACE_ME_USER/work/gemini"
+mode = "default"

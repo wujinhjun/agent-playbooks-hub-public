@@ -1,0 +1,9 @@
+[[projects.platforms]]
+type = "wecom"
+
+[projects.platforms.options]
+corp_id = "${WECOM_CORP_ID}"
+agent_id = "${WECOM_AGENT_ID}"
+corp_secret = "${WECOM_CORP_SECRET}"
+token = "${WECOM_TOKEN}"
+encoding_aes_key = "${WECOM_AES_KEY}"

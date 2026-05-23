@@ -1,0 +1,15 @@
+# ---- Yolo — bypass 高危 bot ----
+# 建议：独占小群 + 专用 Unix 用户 + admin_from 限制
+
+[[projects]]
+name = "yolo"
+provider_refs = ["anthropic"]
+# run_as_user = "cc-yolo"              # OS 级隔离
+# admin_from = "ou_REPLACE_ME_OPENID"   # 只允许指定飞书 openid 调用
+
+[projects.agent]
+type = "claudecode"
+
+[projects.agent.options]
+work_dir = "/home/REPLACE_ME_USER/work/yolo"
+mode = "bypass"

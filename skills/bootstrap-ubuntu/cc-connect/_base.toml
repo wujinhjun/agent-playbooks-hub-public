@@ -1,0 +1,7 @@
+# =============================================================================
+# cc-connect config — assembled from modular snippets
+# 来源: skills/bootstrap-ubuntu/cc-connect/
+# =============================================================================
+
+[log]
+level = "info"

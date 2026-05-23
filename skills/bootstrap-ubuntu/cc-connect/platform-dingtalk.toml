@@ -1,0 +1,6 @@
+[[projects.platforms]]
+type = "dingtalk"
+
+[projects.platforms.options]
+app_key = "${DINGTALK_APP_KEY}"
+app_secret = "${DINGTALK_APP_SECRET}"
