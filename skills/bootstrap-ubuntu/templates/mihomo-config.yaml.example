@@ -1,5 +1,9 @@
-# === Mihomo Config Template ===
-# 复制到 ~/.config/bootstrap-ubuntu/mihomo-config.yaml 并填入真实值
+# === Mihomo Config Example ===
+# 这是一个最小可跑的示例（VLESS+Reality 单节点）——按你自己机场/自建节点格式改。
+# Skill 不会替换此文件内容，只会把 ~/.config/bootstrap-ubuntu/mihomo-config.yaml
+# 原样拷到 /etc/mihomo/config.yaml。把下面的占位符全替换成真值后再让 skill 启动。
+#
+# 协议参考: https://wiki.metacubex.one/config/proxies/
 
 mixed-port: 7890
 allow-lan: false
@@ -25,37 +29,33 @@ dns:
     - 223.5.5.5
 
 proxies:
-  - name: "YOUR_PROXY_NAME"
-    type: "vless"
-    server: "REPLACE_WITH_VPS_IP"
+  # —— 示例：VLESS + Reality。换成你自己的节点 ——
+  - name: "PROXY"
+    type: vless
+    server: YOUR_SERVER
     port: 443
-    uuid: "REPLACE_WITH_UUID"
-    network: "tcp"
+    uuid: YOUR_UUID
+    network: tcp
     tls: true
     udp: true
-    flow: "xtls-rprx-vision"
-    servername: "www.apple.com"
+    flow: xtls-rprx-vision
+    servername: www.apple.com
     reality-opts:
-      public-key: "REPLACE_WITH_PUBLIC_KEY"
-      short-id: "REPLACE_WITH_SHORT_ID"
-    client-fingerprint: "chrome"
+      public-key: YOUR_REALITY_PUBLIC_KEY
+      short-id: YOUR_REALITY_SHORT_ID
+    client-fingerprint: chrome
 
 proxy-groups:
   - name: PROXY
     type: select
     proxies:
-      - YOUR_PROXY_NAME
+      - PROXY
 
 rules:
-  # 风控严格的目标
   - DOMAIN-SUFFIX,anthropic.com,PROXY
-  - DOMAIN,api.anthropic.com,PROXY
-  # 普通国外资源
   - DOMAIN-SUFFIX,github.com,PROXY
   - DOMAIN-SUFFIX,githubusercontent.com,PROXY
   - DOMAIN-SUFFIX,docker.io,PROXY
-  # 中文内容直连
   - GEOSITE,cn,DIRECT
-  # SSH 直连
   - DST-PORT,22,DIRECT
   - MATCH,PROXY

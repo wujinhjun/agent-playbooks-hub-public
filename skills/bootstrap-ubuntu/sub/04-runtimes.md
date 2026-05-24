@@ -5,6 +5,8 @@
 ```bash
 #!/bin/bash
 set -e
+PRIV_DIR="$HOME/.config/bootstrap-ubuntu"
+source "$PRIV_DIR/bootstrap.env" 2>/dev/null || true
 
 # ---- nvm + Node + pnpm ----
 if [[ "${INSTALL_NODE:-N}" == "Y" ]]; then
@@ -99,18 +101,10 @@ fi
 # ---- Flutter + FVM ----
 if [[ "${INSTALL_FLUTTER:-N}" == "Y" ]]; then
     if ! command -v fvm &>/dev/null; then
-        # fvm 需要 Dart — 先装 Dart SDK
-        if ! command -v dart &>/dev/null; then
-            sudo apt install -y dart 2>/dev/null || {
-                DART_VER="3.8.5"
-                wget -q "https://storage.googleapis.com/dart-archive/channels/stable/release/${DART_VER}/sdk/dartsdk-linux-x64-release.zip" -O /tmp/dart.zip
-                sudo unzip -q /tmp/dart.zip -d /usr/local/dart
-                sudo ln -sf /usr/local/dart/dart-sdk/bin/dart /usr/local/bin/dart
-            }
-        fi
-        dart pub global activate fvm
-        export PATH="$HOME/.pub-cache/bin:$PATH"
-        echo 'export PATH="$HOME/.pub-cache/bin:$PATH"' >> ~/.bashrc
+        # fvm 官方装法：独立二进制，不再依赖 Dart pub
+        curl -fsSL https://fvm.app/install.sh | bash
+        export PATH="$HOME/.fvm_flutter/bin:$PATH"
+        echo 'export PATH="$HOME/.fvm_flutter/bin:$PATH"' >> ~/.bashrc
         fvm install stable
         fvm global stable
         echo "[OK] fvm + Flutter stable"

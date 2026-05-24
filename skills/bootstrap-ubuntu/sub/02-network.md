@@ -2,13 +2,20 @@
 
 ## 2.1 Mihomo
 
+此 sub 不修改 mihomo config，**只把 `~/.config/bootstrap-ubuntu/mihomo-config.yaml`
+原样拷到 `/etc/mihomo/config.yaml`**。任何 mihomo 支持的协议都可以——用户自己写那个文件。
+
 ```bash
 #!/bin/bash
 set -e
-SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SKILL_DIR/../bootstrap.env" 2>/dev/null || true
+SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PRIV_DIR="$HOME/.config/bootstrap-ubuntu"
+source "$PRIV_DIR/bootstrap.env" 2>/dev/null || true
 TODO_FILE="${TODO_FILE:-/tmp/bootstrap-todos.txt}"
 
+[[ "${INSTALL_MIHOMO:-N}" != "Y" ]] && { echo "[SKIP] mihomo"; exit 0; }
+
+# ---- 装二进制 ----
 MIHOMO_VER=$(curl -sL --connect-timeout 10 https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r .tag_name)
 if [[ -z "$MIHOMO_VER" || "$MIHOMO_VER" == "null" ]]; then
     echo "[FATAL] Cannot fetch mihomo version — GitHub API unreachable"
@@ -20,39 +27,43 @@ gunzip -f /tmp/mihomo.gz
 sudo mv /tmp/mihomo /usr/local/bin/mihomo
 sudo chmod +x /usr/local/bin/mihomo
 
-# 渲染配置 — env 有值的替换，没填的保留 placeholder
-cp "$SKILL_DIR/../mihomo-config.yaml" /tmp/mihomo-config.yaml
-for v in MIHOMO_VPS_SERVER MIHOMO_VPS_PORT MIHOMO_VPS_PASSWORD MIHOMO_SG_SERVER MIHOMO_SG_PORT MIHOMO_SG_UUID; do
-    val="${!v:-}"
-    [[ -n "$val" && "$val" != "REPLACE_ME" ]] && sed -i "s|REPLACE_ME_${v#MIHOMO_}|${val}|g" /tmp/mihomo-config.yaml
-done
+# ---- 部署 config ----
+SRC="$PRIV_DIR/mihomo-config.yaml"
+if [[ ! -f "$SRC" ]]; then
+    cp "$SKILL_DIR/templates/mihomo-config.yaml.example" "$SRC"
+    echo "[WARN] $SRC 是示例 — 编辑成真值后重跑"
+    echo "[mihomo] $SRC 仍是示例 — 填完后 systemctl start mihomo" >> "$TODO_FILE"
+    exit 0
+fi
 
 sudo mkdir -p /etc/mihomo/ruleset
-sudo cp /tmp/mihomo-config.yaml /etc/mihomo/config.yaml
-sudo cp "$SKILL_DIR/../mihomo.service" /etc/systemd/system/mihomo.service
+sudo cp "$SRC" /etc/mihomo/config.yaml
+sudo cp "$SKILL_DIR/mihomo.service" /etc/systemd/system/mihomo.service
 sudo systemctl daemon-reload
 sudo systemctl enable mihomo
 
-# 检查是否还有占位符 — 有就不 start
-if grep -q REPLACE_ME /etc/mihomo/config.yaml; then
-    echo "[WARN] Mihomo config has placeholders — not starting"
-    echo "[mihomo] /etc/mihomo/config.yaml 含占位符 — 填完后 systemctl start mihomo" >> "$TODO_FILE"
+# ---- 启动前校验：仍含示例占位符就不启 ----
+if grep -qE 'YOUR_(SERVER|UUID|REALITY_)' /etc/mihomo/config.yaml; then
+    echo "[WARN] mihomo config 仍含示例占位符 YOUR_* — 不启动"
+    echo "[mihomo] /etc/mihomo/config.yaml 含示例占位符 — 改完后 systemctl start mihomo" >> "$TODO_FILE"
 else
+    if grep -q "tun:\s*$" /etc/mihomo/config.yaml || grep -qE 'enable:\s*true' /etc/mihomo/config.yaml; then
+        echo "[WARN] mihomo config 看起来开启了 TUN——会改路由表，远程 SSH 可能掉线。"
+        echo "       如无 console/Tailscale 兜底，按 Ctrl-C 取消，关掉 tun.enable 再跑"
+        sleep 5
+    fi
     sudo systemctl start mihomo
-    echo "[WARN] TUN mode enabled — SSH may drop!"
 fi
 echo "[OK] Mihomo installed"
 ```
 
 ## 2.2 Tailscale
 
-仅当 `INSTALL_TAILSCALE=Y` 时执行：
-
 ```bash
 #!/bin/bash
 set -e
-SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SKILL_DIR/../bootstrap.env" 2>/dev/null || true
+PRIV_DIR="$HOME/.config/bootstrap-ubuntu"
+source "$PRIV_DIR/bootstrap.env" 2>/dev/null || true
 
 [[ "${INSTALL_TAILSCALE:-N}" != "Y" ]] && { echo "[SKIP] Tailscale"; exit 0; }
 

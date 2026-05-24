@@ -45,8 +45,8 @@ cc-connect 多 bot + tmux 工作台 + provider 别名，模块化配置。
 根据用户选择，拼接 snippets 生成 `config.toml`：
 
 ```bash
-SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SNIPPETS="$SKILL_DIR/../cc-connect"
+SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SNIPPETS="$SKILL_DIR/cc-connect"
 OUTPUT="./cc-connect-config.toml"
 
 # 1. base
@@ -91,6 +91,8 @@ echo "  Edit placeholders in both files, then re-run this skill to deploy."
 用户改完 `cc-connect-config.toml` 和 `secrets.env` 后：
 
 ```bash
+SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 # secrets
 mkdir -p ~/.config/cc-connect && chmod 700 ~/.config/cc-connect
 cp ./secrets.env ~/.config/cc-connect/secrets.env
@@ -100,8 +102,15 @@ chmod 600 ~/.config/cc-connect/secrets.env
 mkdir -p ~/.cc-connect
 cp ./cc-connect-config.toml ~/.cc-connect/config.toml
 
-# systemd
-sed "s|REPLACE_ME_USER|$USER|g" "$SKILL_DIR/../cc-connect.service" | \
+# systemd — 动态解出 node bin 路径（cc-connect 是 npm global 包）
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+NODE_BIN="$(dirname "$(readlink -f "$(command -v node)")")"
+[[ -z "$NODE_BIN" ]] && { echo "[FATAL] node not found"; exit 1; }
+
+sed -e "s|REPLACE_ME_USER|$USER|g" \
+    -e "s|REPLACE_ME_NODE_BIN|$NODE_BIN|g" \
+    "$SKILL_DIR/cc-connect.service" | \
     sudo tee /etc/systemd/system/cc-connect.service > /dev/null
 sudo systemctl daemon-reload
 sudo systemctl enable --now cc-connect
@@ -124,14 +133,14 @@ sudo systemctl status cc-connect
 ## Step 5: 多 Agent 工作台
 
 ```bash
-cp "$SKILL_DIR/../agents-config.sh" ./agents-config.sh
-chmod +x ./agents-config.sh
+SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+mkdir -p ~/.config/agents
+cp "$SKILL_DIR/agents-config.sh" ~/.config/agents/agents.sh
 
-# 部署
-mkdir -p ~/.zshrc.d
-cp ./agents-config.sh ~/.zshrc.d/agents.sh
-echo 'source ~/.zshrc.d/agents.sh' >> ~/.zshrc
-source ~/.zshrc.d/agents.sh
+rc="$HOME/.bashrc"
+[[ "$SHELL" == */zsh ]] && rc="$HOME/.zshrc"
+grep -q 'agents.sh' "$rc" 2>/dev/null || echo 'source ~/.config/agents/agents.sh' >> "$rc"
+source ~/.config/agents/agents.sh 2>/dev/null || true
 ```
 
 包含：`cc`/`cck`/`ccd`/`ccy` 别名、`tmux-bootstrap`、`setup-work-dirs`、`docker-sandbox`。

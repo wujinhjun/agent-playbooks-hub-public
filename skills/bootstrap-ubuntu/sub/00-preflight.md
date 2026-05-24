@@ -3,9 +3,20 @@
 ```bash
 #!/bin/bash
 set -e
-SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SKILL_DIR/../bootstrap.env" 2>/dev/null || true
+SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PRIV_DIR="$HOME/.config/bootstrap-ubuntu"
 TODO_FILE="${TODO_FILE:-/tmp/bootstrap-todos.txt}"
+> "$TODO_FILE"
+
+# Seed 私有配置目录
+mkdir -p "$PRIV_DIR"
+[[ ! -f "$PRIV_DIR/bootstrap.env" ]] && \
+    cp "$SKILL_DIR/templates/bootstrap.env.example" "$PRIV_DIR/bootstrap.env" && \
+    echo "[OK] Seeded $PRIV_DIR/bootstrap.env (请填值后重跑)"
+[[ ! -f "$PRIV_DIR/mihomo-config.yaml" ]] && \
+    cp "$SKILL_DIR/templates/mihomo-config.yaml.example" "$PRIV_DIR/mihomo-config.yaml"
+
+source "$PRIV_DIR/bootstrap.env"
 
 UBUNTU_VERSION=$(lsb_release -rs)
 echo "[INFO] Ubuntu $UBUNTU_VERSION detected"
@@ -15,40 +26,39 @@ sudo apt update -qq
 sudo apt install -y build-essential zip unzip curl wget ca-certificates bison
 echo "[OK] Build deps installed"
 
-# 确认 NOPASSWD sudo
+# 确认 NOPASSWD sudo —— 高权限变更，先确认用户同意再配
 if ! sudo -n true 2>/dev/null; then
-    echo "[FATAL] NOPASSWD sudo not configured."
-    echo '  Run: echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/claude-agent'
-    exit 1
+    echo "[WARN] NOPASSWD sudo 未配置。"
+    echo '  如确认要启用（共享机器请慎用），执行:'
+    echo '    echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/claude-agent'
+    echo "[preflight] NOPASSWD sudo 未启用 — 部分模块会反复要密码" >> "$TODO_FILE"
 fi
-echo "[OK] NOPASSWD sudo configured"
 
-# 校验 git 身份
-if [[ -z "${GIT_USER_NAME:-}" || -z "${GIT_USER_EMAIL:-}" ]]; then
-    echo "[FATAL] GIT_USER_NAME and GIT_USER_EMAIL must be set in bootstrap.env"
-    exit 1
+# Git 身份只在用户勾了 INSTALL_GIT 时才强校验
+if [[ "${INSTALL_GIT:-N}" == "Y" ]]; then
+    if [[ -z "${GIT_USER_NAME:-}" || -z "${GIT_USER_EMAIL:-}" ]]; then
+        echo "[FATAL] INSTALL_GIT=Y 但 GIT_USER_NAME/EMAIL 未填"
+        echo "  编辑 $PRIV_DIR/bootstrap.env 后重跑"
+        exit 1
+    fi
+    echo "[OK] Git identity: $GIT_USER_NAME <$GIT_USER_EMAIL>"
 fi
-echo "[OK] Git identity: $GIT_USER_NAME <$GIT_USER_EMAIL>"
 
-# 审计 env 缺失项（不阻塞）
-if [[ -z "${GITHUB_TOKEN:-}" ]]; then
-    echo "[gh] GITHUB_TOKEN 未填写 — 需手动 gh auth login" >> "$TODO_FILE"
+# 审计可选 env 缺失（不阻塞，记 TODO）
+[[ "${INSTALL_GIT:-N}" == "Y" && -z "${GITHUB_TOKEN:-}" ]] && \
+    echo "[gh] GITHUB_TOKEN 未填 — 需手动 gh auth login" >> "$TODO_FILE"
+
+if [[ "${INSTALL_MIHOMO:-N}" == "Y" ]] && [[ -f "$PRIV_DIR/mihomo-config.yaml" ]]; then
+    if grep -qE 'YOUR_(SERVER|UUID|REALITY_)' "$PRIV_DIR/mihomo-config.yaml"; then
+        echo "[mihomo] $PRIV_DIR/mihomo-config.yaml 仍是示例 — 编辑后 02-network 才会启动" >> "$TODO_FILE"
+    fi
 fi
-if [[ -z "${MIHOMO_VPS_SERVER:-}" ]]; then
-    echo "[mihomo] MIHOMO_VPS_SERVER 未填写 — config 将保留占位符" >> "$TODO_FILE"
-fi
-if [[ -z "${MIHOMO_VPS_PASSWORD:-}" || "${MIHOMO_VPS_PASSWORD}" == "REPLACE_ME" ]]; then
-    echo "[mihomo] MIHOMO_VPS_PASSWORD 仍是占位符 — 需编辑 /etc/mihomo/config.yaml" >> "$TODO_FILE"
-fi
-if [[ -z "${MIHOMO_SG_UUID:-}" || "${MIHOMO_SG_UUID}" == "REPLACE_ME" ]]; then
-    echo "[mihomo] MIHOMO_SG_UUID 仍是占位符 — 需编辑 /etc/mihomo/config.yaml" >> "$TODO_FILE"
-fi
-if [[ -z "${TAILSCALE_AUTH_KEY:-}" ]]; then
-    echo "[tailscale] TAILSCALE_AUTH_KEY 未填写 — 需手动 sudo tailscale up" >> "$TODO_FILE"
-fi
-if [[ -z "${CC_CONNECT_TOKEN:-}" ]]; then
-    echo "[cc-connect] CC_CONNECT_TOKEN 未填写 — 需手动配置" >> "$TODO_FILE"
-fi
+
+[[ "${INSTALL_TAILSCALE:-N}" == "Y" && -z "${TAILSCALE_AUTH_KEY:-}" ]] && \
+    echo "[tailscale] TAILSCALE_AUTH_KEY 未填 — 需手动 sudo tailscale up" >> "$TODO_FILE"
+
+[[ "${INSTALL_CC_CONNECT:-N}" == "Y" && -z "${CC_CONNECT_TOKEN:-}" ]] && \
+    echo "[cc-connect] CC_CONNECT_TOKEN 未填 — 需手动配置" >> "$TODO_FILE"
 
 echo "[OK] Pre-flight complete"
 ```
