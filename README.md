@@ -1,21 +1,40 @@
 # Claude Skills — 私有源仓库
 
-我的 Claude Code skills 集中管理仓库。标记 `public: true` 的 skill 通过 CI 自动发布到公开镜像。
+我的 Claude Code skills 集中管理仓库。
 
 ## Skills 一览
 
-### bootstrap-ubuntu
+| Skill | 用途 | 平台 |
+| ------- | ------ | ------ |
+| `cc-setup` | 交互式配置 cc-switch 多 provider 和 shell 别名 | macOS / Linux |
+| `dev-env` | CLI 开发运行时环境（Node/Go/Python/Java/Rust 等） | macOS / Linux |
+| `mac-apps` | macOS GUI 工作应用（效率/AI/编辑器/终端） | macOS only |
+| `bootstrap-ubuntu` | Ubuntu 开发环境一键初始化（20+ 模块） | Ubuntu |
 
-Ubuntu 开发环境一键初始化。AI 交互式引导，用户勾选需要的模块（Node.js / Go / Python / Docker / mihomo / cc-connect / tmux 工作台等 20+ 模块），渐进式安装，不装不需要的东西。
+## 安装方式
 
+### 方式一：直接 symlink（无需 cc-switch）
+
+```bash
+git clone git@github.com:wujinhjun/claude-skills.git ~/claude-skills
+ln -s ~/claude-skills/skills/* ~/.claude/skills/
 ```
-cc-switch skills repos add wujinhjun/claude-skills-public
-cc-switch skills install bootstrap-ubuntu
+
+之后 `git pull` 即可更新。
+
+### 方式二：cc-switch 管理（支持版本切换、启停）
+
+```bash
+brew tap farion1231/ccswitch && brew install cc-switch-cli   # 如未装
+git clone git@github.com:wujinhjun/claude-skills.git ~/claude-skills
+
+cc-switch skills repos add ~/claude-skills --app claude
+cc-switch skills sync-method symlink --app claude
+
+# 发现并安装
+cc-switch skills discover --app claude
+cc-switch skills install <skill-name> --app claude
 ```
-
-## 公开镜像
-
-https://github.com/wujinhjun/claude-skills-public
 
 ## 开发
 
