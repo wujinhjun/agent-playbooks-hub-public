@@ -13,14 +13,19 @@
 
 ## 安装方式
 
-### 方式一：直接 symlink（无需 cc-switch）
+### 方式一：install.sh 逐 skill 注册（无需 cc-switch）
 
 ```bash
 git clone git@github.com:wujinhjun/claude-skills.git ~/claude-skills
-ln -s ~/claude-skills/skills/* ~/.claude/skills/
+cd ~/claude-skills
+
+./scripts/install.sh            # 安装全部（已装过的自动跳过，冲突会询问）
+./scripts/install.sh mac-apps   # 或只装指定的
+./scripts/install.sh --list     # 查看安装状态
+./scripts/install.sh --remove mac-apps   # 卸载某个 skill
 ```
 
-之后 `git pull` 即可更新。
+symlink 方式，`git pull` 即可更新；仓库新增 skill 后再跑一次 `install.sh` 即可（幂等）。
 
 ### 方式二：cc-switch 管理（支持版本切换、启停）
 
