@@ -1,6 +1,6 @@
-# Claude Skills — 私有源仓库
+# Agent Playbooks Hub — 私有源仓库
 
-我的 Claude Code skills 集中管理仓库。
+我的 Agent 可执行 playbooks 集中管理仓库，当前以 Claude Code skills 形式安装和运行。
 
 ## Skills 一览
 
@@ -16,8 +16,8 @@
 ### 方式一：install.sh 逐 skill 注册（无需 cc-switch）
 
 ```bash
-git clone git@github.com:wujinhjun/claude-skills.git ~/claude-skills
-cd ~/claude-skills
+git clone git@github.com:wujinhjun/agent-playbooks-hub.git ~/agent-playbooks-hub
+cd ~/agent-playbooks-hub
 
 ./scripts/install.sh            # 安装全部（已装过的自动跳过，冲突会询问）
 ./scripts/install.sh mac-apps   # 或只装指定的
@@ -31,9 +31,9 @@ symlink 方式，`git pull` 即可更新；仓库新增 skill 后再跑一次 `i
 
 ```bash
 brew tap farion1231/ccswitch && brew install cc-switch-cli   # 如未装
-git clone git@github.com:wujinhjun/claude-skills.git ~/claude-skills
+git clone git@github.com:wujinhjun/agent-playbooks-hub.git ~/agent-playbooks-hub
 
-cc-switch skills repos add ~/claude-skills --app claude
+cc-switch skills repos add ~/agent-playbooks-hub --app claude
 cc-switch skills sync-method symlink --app claude
 
 # 发现并安装
