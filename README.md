@@ -1,56 +1,19 @@
-# Agent Playbooks Hub — 私有源仓库
+# Agent Playbooks Hub
 
-我的 Agent 可执行 playbooks 集中管理仓库，当前以 Claude Code skills 形式安装和运行。
+Public agent-executable playbooks published from the private source repository.
 
-## Skills 一览
+## Available skills
 
-| Skill | 用途 | 平台 |
-| ------- | ------ | ------ |
-| `cc-setup` | 交互式配置 cc-switch 多 provider 和 shell 别名 | macOS / Linux |
-| `dev-env` | CLI 开发运行时环境（Node/Go/Python/Java/Rust 等） | macOS / Linux |
-| `mac-apps` | macOS GUI 工作应用（效率/AI/编辑器/终端） | macOS only |
-| `bootstrap-ubuntu` | Ubuntu 开发环境一键初始化（20+ 模块） | Ubuntu |
+| Skill | Description |
+| --- | --- |
+| [`bootstrap-ubuntu`](skills/bootstrap-ubuntu/) | 初始化 Ubuntu 开发环境。当用户说"bootstrap""初始化服务器""配置开发机""装环境""setup server"时触发。交互式模块选择，渐进式安装 Node.js/Go/Python/Docker/mihomo/cc-connect 等，不装不需要的东西。 |
 
-## 安装方式
-
-### 方式一：install.sh 逐 skill 注册（无需 cc-switch）
+## Install with cc-switch
 
 ```bash
-git clone git@github.com:wujinhjun/agent-playbooks-hub.git ~/agent-playbooks-hub
-cd ~/agent-playbooks-hub
-
-./scripts/install.sh            # 安装全部（已装过的自动跳过，冲突会询问）
-./scripts/install.sh mac-apps   # 或只装指定的
-./scripts/install.sh --list     # 查看安装状态
-./scripts/install.sh --remove mac-apps   # 卸载某个 skill
-```
-
-symlink 方式，`git pull` 即可更新；仓库新增 skill 后再跑一次 `install.sh` 即可（幂等）。
-
-### 方式二：cc-switch 管理（支持版本切换、启停）
-
-```bash
-brew tap farion1231/ccswitch && brew install cc-switch-cli   # 如未装
-git clone git@github.com:wujinhjun/agent-playbooks-hub.git ~/agent-playbooks-hub
-
-cc-switch skills repos add ~/agent-playbooks-hub --app claude
-cc-switch skills sync-method symlink --app claude
-
-# 发现并安装
+cc-switch skills repos add wujinhjun/agent-playbooks-hub-public --app claude
 cc-switch skills discover --app claude
 cc-switch skills install <skill-name> --app claude
 ```
 
-## 开发
-
-在 `skills/` 下创建目录，写 `SKILL.md`：
-
-```yaml
----
-name: my-skill
-public: true   # true = 自动发布到公开镜像, false = 仅私有仓库可见
-description: 当用户说 xxx 时触发
----
-```
-
-推送到 `main` 后 CI 自动同步 `public: true` 的 skill 到公开镜像。
+> This repository is an automatically generated public mirror. Do not edit it directly.
